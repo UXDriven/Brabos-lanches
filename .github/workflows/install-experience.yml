@@ -1,0 +1,39 @@
+name: Install Brabos Experience ZIP
+on:
+  workflow_dispatch:
+    inputs:
+      archive:
+        description: 'ZIP filename at repository root'
+        required: true
+        default: 'brabos_experience_2_5d.zip'
+permissions:
+  contents: write
+jobs:
+  install:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Extract experience safely
+        shell: bash
+        env:
+          ARCHIVE: ${{ inputs.archive }}
+        run: |
+          set -euo pipefail
+          test -f "$ARCHIVE"
+          mkdir -p /tmp/brabos-install
+          unzip -q "$ARCHIVE" -d /tmp/brabos-install
+          test -f /tmp/brabos-install/brabos_final/index.html
+          test -f /tmp/brabos-install/brabos_final/styles.css
+          test -f /tmp/brabos-install/brabos_final/script.js
+          test -f /tmp/brabos-install/brabos_final/public/assets/crown.webp
+          mkdir -p public/experience
+          cp -R /tmp/brabos-install/brabos_final/. public/experience/
+      - name: Commit generated website
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/experience
+          if ! git diff --cached --quiet; then
+            git commit -m "deploy: install Brabos 2.5D experience assets"
+            git push
+          fi
