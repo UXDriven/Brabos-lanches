@@ -3,7 +3,46 @@ import dynamic from 'next/dynamic';
 import {useEffect,useRef,useState} from 'react';
 const ProductScene=dynamic(()=>import('./ProductScene'),{ssr:false});
 export default function Experience(){
- const root=useRef<HTMLElement>(null);const progress=useRef(0);const [chapter,setChapter]=useState(1);const [percent,setPercent]=useState(0);const titles=useRef<(HTMLDivElement|null)[]>([]);
- useEffect(()=>{let ctx:{revert:()=>void}|undefined;let alive=true;(async()=>{const gsap=(await import('gsap')).default;const ScrollTrigger=(await import('gsap/ScrollTrigger')).ScrollTrigger;if(!alive||!root.current)return;gsap.registerPlugin(ScrollTrigger);const reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;if(reduce)return;ctx=gsap.context(()=>{const t=gsap.timeline({scrollTrigger:{trigger:root.current,start:'top top',end:()=>'+='+(window.innerHeight*(window.innerWidth<800?3.5:4.5)),pin:true,scrub:1.2,anticipatePin:1,invalidateOnRefresh:true,onUpdate:self=>{progress.current=self.progress;setPercent(Math.round(self.progress*100));setChapter(Math.min(4,Math.floor(self.progress*4)+1));}}});titles.current.forEach((el,i)=>{if(!el)return;gsap.set(el,{autoAlpha:i===0?1:0,y:i===0?0:50});if(i>0)t.to(el,{autoAlpha:1,y:0,duration:.13},i*.24+.03);if(i<3)t.to(el,{autoAlpha:0,y:-55,duration:.13},i*.24+.17)});t.to({},{duration:1},0)} ,root);ScrollTrigger.refresh()})();return()=>{alive=false;ctx?.revert()}},[]);
- return <><header className="topbar"><a className="brand" href="#inicio">BRABOS<br/><span>LANCHES</span></a><nav className="nav"><a href="#inicio">EXPERIÊNCIA</a><a href="#final" className="cta">CONHECER ↗</a></nav></header><main><section ref={root} className="experience" id="inicio"><div className="eyebrow">UXDRIVEN / EXPERIÊNCIA 3D CONCEITUAL</div>{[['ISSO É','BRABO.'],['NÃO É SÓ','UM LANCHE.'],['CADA CAMADA','CONTA.'],['E TEM','MAIS.']].map(([a,b],i)=><div key={i} ref={el=>{titles.current[i]=el}} className={'scene-title '+(i===0?'first':'')}>{a}<br/><em>{b}</em></div>)}<div className="canvas-wrap"><ProductScene progress={progress}/></div><div className="count">{String(chapter).padStart(2,'0')} / 04</div><div className="rail"><i style={{width:percent+'%'}}/></div><div className="scroll-label">ROLE PARA EXPLORAR ↓</div></section><section className="end" id="final"><div><div style={{fontWeight:800,letterSpacing:3,fontSize:12,marginBottom:24}}>BRABOS LANCHES · CARUARU</div><h2>O SABOR<br/>É BRABO.</h2><p>Rua Mestre Vitalino, 369 · Alto do Moura</p></div><a href="https://www.instagram.com/_braboslanches/" target="_blank" rel="noopener noreferrer">CONHECER A BRABOS ↗</a></section></main><footer className="foot"><span>CONCEITO NÃO OFICIAL · PRODUTO 3D FICTÍCIO</span><span>UXDRIVEN · PROTÓTIPO EM DESENVOLVIMENTO</span></footer></>
+ const root=useRef<HTMLElement>(null);
+ const progress=useRef(0);
+ const [pct,setPct]=useState(0);
+ const headline=useRef<HTMLDivElement>(null);
+ const intro=useRef<HTMLDivElement>(null);
+ const caption=useRef<HTMLDivElement>(null);
+ useEffect(()=>{
+  let alive=true;let cleanup=()=>{};
+  (async()=>{
+   const gsap=(await import('gsap')).default;
+   const {ScrollTrigger}=await import('gsap/ScrollTrigger');
+   if(!alive||!root.current)return;
+   gsap.registerPlugin(ScrollTrigger);
+   if(window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+   const ctx=gsap.context(()=>{
+    const timeline=gsap.timeline({scrollTrigger:{
+     trigger:root.current,start:'top top',
+     end:()=>'+='+(window.innerHeight*(window.innerWidth<800?2.4:3.2)),
+     pin:true,scrub:1,anticipatePin:1,invalidateOnRefresh:true,
+     onUpdate:self=>{progress.current=self.progress;setPct(Math.round(self.progress*100))}
+    }});
+    timeline.fromTo(intro.current,{opacity:1,y:0},{opacity:0,y:-38,duration:.16},.08)
+     .fromTo(headline.current,{opacity:1,y:0},{opacity:0,y:-90,duration:.24},.3)
+     .fromTo(caption.current,{opacity:0,y:45},{opacity:1,y:0,duration:.2},.55)
+     .to(caption.current,{opacity:0,y:-45,duration:.15},.84)
+     .to({},{duration:1},0);
+   },root);
+   cleanup=()=>ctx.revert();ScrollTrigger.refresh();
+  })();
+  return()=>{alive=false;cleanup()};
+ },[]);
+ return <><header className="topbar"><a className="brand" href="#inicio">BRABOS<br/><span>LANCHES</span></a><nav className="nav"><a href="#inicio">EXPERIÊNCIA</a><a href="#final" className="cta">CONHECER ↗</a></nav></header>
+ <main><section className="experience cinematic-first" id="inicio" ref={root}>
+  <div className="cinematic-glow" aria-hidden="true"/>
+  <div className="cinematic-copy" ref={headline}><span>ISSO É</span><strong>BRABO.</strong></div>
+  <div className="cinematic-kicker" ref={intro}>UXDRIVEN / UMA EXPERIÊNCIA BRABOS</div>
+  <div className="cinematic-subtitle" ref={caption}>CADA CAMADA<br/><em>CONTA UMA HISTÓRIA.</em></div>
+  <div className="cinematic-product"><ProductScene progress={progress}/></div>
+  <div className="cinematic-bottom"><span>ROLE PARA EXPLORAR ↓</span><span>01 / 01</span><div className="cinematic-track"><i style={{width:pct+'%'}}/></div></div>
+ </section>
+ <section className="end" id="final"><div><div style={{fontWeight:800,letterSpacing:3,fontSize:12,marginBottom:24}}>BRABOS LANCHES · CARUARU</div><h2>O SABOR<br/>É BRABO.</h2><p>Rua Mestre Vitalino, 369 · Alto do Moura</p></div><a href="https://www.instagram.com/_braboslanches/" target="_blank" rel="noopener noreferrer">CONHECER A BRABOS ↗</a></section></main>
+ <footer className="foot"><span>PROTÓTIPO DE MOTION · MODELO 3D TEMPORÁRIO</span><span>UXDRIVEN · CENA 01 EM DESENVOLVIMENTO</span></footer></>
 }
