@@ -1,5 +1,10 @@
 name: Install Brabos Experience ZIP
 on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/install-experience.yml'
+      - 'brabos_experience_2_5d.zip'
   workflow_dispatch:
     inputs:
       archive:
@@ -16,7 +21,7 @@ jobs:
       - name: Extract experience safely
         shell: bash
         env:
-          ARCHIVE: ${{ inputs.archive }}
+          ARCHIVE: brabos_experience_2_5d.zip
         run: |
           set -euo pipefail
           test -f "$ARCHIVE"
