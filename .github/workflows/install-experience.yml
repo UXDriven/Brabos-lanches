@@ -28,11 +28,12 @@ jobs:
           test -f /tmp/brabos-install/brabos_final/public/assets/crown.webp
           mkdir -p public/experience
           cp -R /tmp/brabos-install/brabos_final/. public/experience/
+          printf "import {redirect} from 'next/navigation';\nexport default function Home(){redirect('/experience/index.html')}\n" > app/page.tsx
       - name: Commit generated website
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add public/experience
+          git add public/experience app/page.tsx
           if ! git diff --cached --quiet; then
             git commit -m "deploy: install Brabos 2.5D experience assets"
             git push
